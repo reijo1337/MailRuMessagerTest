@@ -2,9 +2,9 @@
 #define SERVER_H
 
 #include <boost/asio.hpp>
-#include
+
 using namespace boost::asio;
-using namespace boost::asio::ip::tcp;
+using boost::asio::ip::tcp;
 
 class Server
 {
@@ -13,8 +13,10 @@ public:
 
 private:
     void startAccept();
+    void handleAccept(std::shared_ptr<tcp::socket> &socket, const boost::system::error_code& err_code);
 
-    acceptor m_acceptor;
+    io_service &m_service;
+    tcp::acceptor m_acceptor;
 };
 
 #endif // SERVER_H
