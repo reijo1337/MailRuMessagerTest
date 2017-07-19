@@ -2,6 +2,10 @@
 #include <iostream>
 
 #include <boost/bind.hpp>
+#include <string>
+#include <memory>
+
+#include "tcp_connection.h"
 
 Server::Server(io_service &service, int port) :
     m_service(service), m_acceptor(service, tcp::endpoint(tcp::v4(), port))
@@ -21,6 +25,13 @@ void Server::startAccept()
 
 void Server::handleAccept(std::shared_ptr<tcp::socket> &socket, const boost::system::error_code &err_code)
 {
-    std::cout << "Some accept was handled\n";
+    if (!err_code)
+        try {
+            std::make_shared<TcpConnection>(TcpConnection(std::move(socket)))->doABarrelRoll();
+        } catch (std::exception& e) {
+            std::cerr << e.what() << std::endl;
+        }
+
+    /// And again
     startAccept();
 }
