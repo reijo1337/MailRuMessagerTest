@@ -19,6 +19,8 @@ private:
     void handleConnect(boost::asio::yield_context yield);
     std::string getFileName(std::string req);
 
+    bool youWantFileOrWhat(std::string filename);
+
     std::shared_ptr<tcp::socket> m_sock;
 };
 

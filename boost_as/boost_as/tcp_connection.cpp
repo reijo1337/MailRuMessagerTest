@@ -2,6 +2,9 @@
 
 #include <boost/bind.hpp>
 #include <iostream>
+#include <boost/filesystem.hpp>
+
+using namespace boost::filesystem;
 
 TcpConnection::TcpConnection(std::shared_ptr<tcp::socket> &&socket)
     : m_sock(socket)
@@ -25,11 +28,28 @@ void TcpConnection::handleConnect(boost::asio::yield_context yield)
         std::string line;
         std::getline(is, line);
 
-        std::string what = getFileName(line);
-        std::cout << what << std::endl;
-      }
-      catch (std::exception& e)
-      {
+        std::string filename = getFileName(line);
+
+        /// Whell, whell, whell. What do we have there
+        if (filename.empty()) {
+            std::cerr << "It's not get request\n";
+            return;
+        }
+        if (!youWantFileOrWhat(filename)) {
+            std::cerr << "There is no such file\n";
+            return;
+        }
+
+        int file;
+        if ((file = open(filename.c_str(), O_RDONLY)) == -1) {
+            std::cerr << "Can't open this file\n";
+            return;
+        }
+        close(file);
+
+        std::cout << filename << std::endl;
+    } catch (std::exception& e) {
+        std::cerr << e.what() << std::endl;
     }
 }
 
@@ -59,4 +79,11 @@ std::__cxx11::string TcpConnection::getFileName(std::__cxx11::string req)
     }
 
     return ret;
+}
+
+bool TcpConnection::youWantFileOrWhat(std::__cxx11::string filename)
+{
+
+    path pathToFile(filename);
+    return (is_regular_file(pathToFile) and exists(pathToFile));
 }
